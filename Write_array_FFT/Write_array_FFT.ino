@@ -21,7 +21,7 @@ ESP8266WiFiMulti wifiMulti;
 // InfluxDB v2 server url, e.g. https://eu-central-1-1.aws.cloud2.influxdata.com (Use: InfluxDB UI -> Load Data -> Client Libraries)
 #define INFLUXDB_URL "http://125.229.142.15:9453"
 // InfluxDB v2 server or cloud API token (Use: InfluxDB UI -> Data -> API Tokens -> Generate API Token)
-#define INFLUXDB_TOKEN "yoN726RbcJejGIjB4wAKblcVwidlM2B65QV9tWbYh96GQ1px8p4l8AY_OWA2Pe7bTRhrLFtFz9ll5zGYx6qCBg=="
+#define INFLUXDB_TOKEN "VLJI0v-iKBTAmclC9KWPYEwN4swa6mITR-LJK1uw3c1_LDzwgroQ-eliFQcq1-YJc6G1FdL_ULa-z2U1aKe5mw=="
 // InfluxDB v2 organization id (Use: InfluxDB UI -> User -> About -> Common Ids )
 #define INFLUXDB_ORG "K1082"
 // InfluxDB v2 bucket name (Use: InfluxDB UI ->  Data -> Buckets)
