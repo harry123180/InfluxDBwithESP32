@@ -76,6 +76,7 @@ void setup() {
   }
 }
 void loop() {
+   unsigned long start_time = millis() ;
   // Construct a Flux query
   // Query will find the worst RSSI for last hour for each connected WiFi network with this device
   String query = "from(bucket: \"test\") \
@@ -125,7 +126,7 @@ void loop() {
 
   // Close the result
   result.close();
-
+  Serial.print(millis() - start_time );
   Serial.println("Wait 10s");
   delay(10000);
 }

@@ -79,6 +79,7 @@ void setup() {
   }
 }
 void loop() {
+  unsigned long start_time = millis() ;
   sensor.clearFields();
   for(int i=0;i<128;i++){
   sensor.addField("bin"+String(i),random(0, 100));
@@ -91,6 +92,7 @@ void loop() {
     Serial.print("InfluxDB write failed: ");
     Serial.println(client.getLastErrorMessage());
   }
+  Serial.print(millis() - start_time );
   Serial.println("Wait 10s");
   delay(10000);
 }
