@@ -32,7 +32,7 @@ ESP8266WiFiMulti wifiMulti;
 #define INFLUXDB_BUCKET "test"
 #define TZ_INFO "GMT-8"
 InfluxDBClient client(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN, InfluxDbCloud2CACert);
-Point sensor("mem3");
+Point sensor("mem4");
 WiFiManager wm;
 ///////////////////////////////////
 /* EdegComputing宣告*/
@@ -58,7 +58,21 @@ float Time_Array[axis_num][FFT_N];
 bool flag0 = false;
 char print_buf[500];
 bool EC_State=false;
-
+//*******************octave band壓縮****************//
+const int NUM_BANDS = 7;
+const float CENTER_FREQS[NUM_BANDS] = {31.5, 63, 125, 250,500 ,1000, 2000};
+const int LOWER_BOUNDS[NUM_BANDS] =   {0,    8,  15,  30, 59,  118 , 233};
+const int UPPER_BOUNDS[NUM_BANDS] =   {7,    14, 29,  58, 117, 232 , 465};
+int axis_choice =2;
+void compressOctaveBand(float* data_fft, float* output) {
+  for (int i = 0; i < NUM_BANDS; i++) {
+    float sum = 0;
+    for (int j = LOWER_BOUNDS[i]; j <= UPPER_BOUNDS[i]; j++) {
+      sum += data_fft[j];
+    }
+    output[i] = sum;
+  }
+}
 typedef struct data_package {
 int num=2;
 double Mean_[3] = {0};
@@ -97,9 +111,9 @@ void taskOne( void * parameter ){
           EC.Std_2D(Time_Array,data_pkg.Mean_,data_pkg.Std_);          
           EC.RMS_2D(Time_Array,data_pkg.RMS_);          
           EC.Kurtosis_2D(Time_Array,data_pkg.Mean_,data_pkg.Std_,data_pkg.Kurtosis_);
-          sensor.addField("Mean", data_pkg.Mean_[0]);
-          sensor.addField("Std", data_pkg.Std_[0]); 
-          sensor.addField("Kurtosis", data_pkg.Kurtosis_[0]); 
+          sensor.addField("Mean", data_pkg.Mean_[axis_choice]);
+          sensor.addField("Std", data_pkg.Std_[axis_choice]); 
+          sensor.addField("Kurtosis", data_pkg.Kurtosis_[axis_choice]); 
            /*
            Serial.print(data_pkg.Mean_[0]);
            Serial.print(" ");
@@ -124,8 +138,8 @@ void taskOne( void * parameter ){
             freq_mag[1][k] = sqrt(pow(real_fft_plan_1->output[2*k],2) + pow(real_fft_plan_1->output[2*k+1],2))/1;
             freq_mag[2][k] = sqrt(pow(real_fft_plan_2->output[2*k],2) + pow(real_fft_plan_2->output[2*k+1],2))/1;
             float freq = k*1.0/TOTAL_TIME;  
-            //Serial.println(  freq_mag[0][k]);   
-            sensor.addField(String(freq)+"Hz",freq_mag[0][k]); 
+            //Serial.println(  freq_mag[0][k]);  
+            //sensor.addField(String(freq)+"Hz",freq_mag[0][k]);  
             if(freq_mag[0][k] >  data_pkg.max_magnitude[0]){
                 data_pkg.max_magnitude[0] = freq_mag[0][k];
                 data_pkg.fundamental_freq[0] = freq;
@@ -138,8 +152,16 @@ void taskOne( void * parameter ){
                 data_pkg.max_magnitude[2] = freq_mag[2][k];
                 data_pkg.fundamental_freq[2] =freq;
             }        
+          }
           
-          }                    
+          float compressed[NUM_BANDS] = {};
+          compressOctaveBand(freq_mag[axis_choice] , compressed);  
+          for(int sender_indx =0;sender_indx<7;sender_indx++){
+             sensor.addField(String(CENTER_FREQS[sender_indx])+"Hz",compressed[sender_indx]);                  
+            Serial.print(compressed[sender_indx]);
+            Serial.print(" ");
+            Serial.println(String(CENTER_FREQS[sender_indx])+"Hz");
+          }
           fft_destroy(real_fft_plan_0);//釋放fft記憶體
           fft_destroy(real_fft_plan_1);
           fft_destroy(real_fft_plan_2);   
