@@ -43,9 +43,9 @@ short int sensitivity = 54;
 Computer EC(FFT_N,axis_num,sensitivity);
 
 //****FFT 必須的變數****//
-int Sampling_Rate =5500;
+int Sampling_Rate =1000;
 short int TimerRef = 1000000/Sampling_Rate;
-const float TOTAL_TIME = 0.1861; // This is equal to FFT_N/sampling_freq
+const float TOTAL_TIME = 1.024; // This is equal to FFT_N/sampling_freq
 float fft_input0[FFT_N];
 float fft_output0[FFT_N];
 float fft_input1[FFT_N];
@@ -59,10 +59,10 @@ bool flag0 = false;
 char print_buf[500];
 bool EC_State=false;
 //*******************octave band壓縮****************//
-const int NUM_BANDS = 7;
-const float CENTER_FREQS[NUM_BANDS] = {31.5, 63, 125, 250,500 ,1000, 2000};
-const int LOWER_BOUNDS[NUM_BANDS] =   {0,    8,  15,  30, 59,  118 , 233};
-const int UPPER_BOUNDS[NUM_BANDS] =   {7,    14, 29,  58, 117, 232 , 465};
+const int NUM_BANDS = 6;
+const float CENTER_FREQS[NUM_BANDS] = {16,    31.5, 63,  125, 250,  500};
+const int LOWER_BOUNDS[NUM_BANDS] =   {11,    23,   45,  89,  178,  356};
+const int UPPER_BOUNDS[NUM_BANDS] =   {22,    44,   88,  177, 355,  511 };
 int axis_choice =2;
 void compressOctaveBand(float* data_fft, float* output) {
   for (int i = 0; i < NUM_BANDS; i++) {
@@ -155,12 +155,17 @@ void taskOne( void * parameter ){
           }
           
           float compressed[NUM_BANDS] = {};
+          //for(int qq=0;qq<512;qq++){
+             //Serial.print(qq*1.0/TOTAL_TIME);
+             //Serial.print(" ");
+             //Serial.println(freq_mag[axis_choice][qq]);
+          //}
           compressOctaveBand(freq_mag[axis_choice] , compressed);  
-          for(int sender_indx =0;sender_indx<7;sender_indx++){
+          for(int sender_indx =0;sender_indx<NUM_BANDS;sender_indx++){
              sensor.addField(String(CENTER_FREQS[sender_indx])+"Hz",compressed[sender_indx]);                  
-            Serial.print(compressed[sender_indx]);
-            Serial.print(" ");
-            Serial.println(String(CENTER_FREQS[sender_indx])+"Hz");
+             //Serial.print(compressed[sender_indx]);
+             //Serial.print(" ");
+             //Serial.println(String(CENTER_FREQS[sender_indx])+"Hz");
           }
           fft_destroy(real_fft_plan_0);//釋放fft記憶體
           fft_destroy(real_fft_plan_1);
